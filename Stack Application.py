@@ -284,8 +284,7 @@ class ParkingLot:
             self.screen.fill((255, 255, 255))  # Clear the screen with a white background
 
             # Draw the back button
-            pygame.draw.rect(self.screen, (0, 0, 0), self.back_button)
-            back_button_text = back_button_font.render("<", True, (255, 255, 255))
+            back_button_text = back_button_font.render("<", True, (0, 0, 0))  # Black font color
             self.screen.blit(back_button_text, (self.back_button.x + 10, self.back_button.y + 5))
 
             # Display the parked cars
