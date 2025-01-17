@@ -50,8 +50,8 @@ class ParkingLot:
         self.arrived_count = 0  # Counter for the number of cars that have arrived
 
         # Buttons
-        self.show_license_plate_button = pygame.Rect(10, 540, 200, 50)
-        self.show_parked_cars_button = pygame.Rect(590, 540, 200, 50)
+        self.show_cars_parked_button = pygame.Rect(300, 540, 200, 50)
+        self.back_button = pygame.Rect(10, 10, 50, 50)  # Back button
 
     def get_plate_number(self, arrived_count, is_departure=False, message=None):
         font = pygame.font.SysFont(None, 48)
@@ -79,13 +79,19 @@ class ParkingLot:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if button_rect_arrival.collidepoint(event.pos) and arrived_count < 10:  # Arrival button clicked
-                        return text, 'arrival'
+                        if not text.strip():
+                            message = "No plate number entered"
+                            message_timer = pygame.time.get_ticks()
+                        else:
+                            return text, 'arrival'
                     if button_rect_departure.collidepoint(event.pos):  # Departure button clicked
-                        return text, 'departure'
-                    if self.show_license_plate_button.collidepoint(event.pos):
-                        self.show_license_plates()
-                    if self.show_parked_cars_button.collidepoint(event.pos):
-                        self.show_parked_cars()
+                        if not text.strip():
+                            message = "No plate number entered"
+                            message_timer = pygame.time.get_ticks()
+                        else:
+                            return text, 'departure'
+                    if self.show_cars_parked_button.collidepoint(event.pos):
+                        self.show_cars_parked()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
                         text = text[:-1]  # Remove last character on backspace
@@ -146,15 +152,10 @@ class ParkingLot:
             self.screen.blit(button_text_departure, (button_rect_departure.x + (button_rect_departure.width - button_text_departure.get_width()) // 2, 
                                                button_rect_departure.y + (button_rect_departure.height - button_text_departure.get_height()) // 2))
 
-            # Draw the "Show License Plates" button
-            pygame.draw.rect(self.screen, (0, 0, 255), self.show_license_plate_button)
-            show_license_plate_text = pygame.font.SysFont(None, 24).render("Show License Plates", True, (255, 255, 255))
-            self.screen.blit(show_license_plate_text, (self.show_license_plate_button.x + 10, self.show_license_plate_button.y + 15))
-
-            # Draw the "Show Parked Cars" button
-            pygame.draw.rect(self.screen, (0, 0, 255), self.show_parked_cars_button)
-            show_parked_cars_text = pygame.font.SysFont(None, 24).render("Show Parked Cars", True, (255, 255, 255))
-            self.screen.blit(show_parked_cars_text, (self.show_parked_cars_button.x + 10, self.show_parked_cars_button.y + 15))
+            # Draw the "Show Cars Parked" button
+            pygame.draw.rect(self.screen, (0, 0, 255), self.show_cars_parked_button)
+            show_cars_parked_text = pygame.font.SysFont(None, 24).render("Show Cars Parked", True, (255, 255, 255))
+            self.screen.blit(show_cars_parked_text, (self.show_cars_parked_button.x + 10, self.show_cars_parked_button.y + 15))
 
             pygame.display.flip()
             clock.tick(30)
@@ -175,6 +176,7 @@ class ParkingLot:
                 if plate_number.strip().upper() in [car.plate_number.strip().upper() for car in self.cars_objects]:
                     # Display a message if the car is already parked
                     self.get_plate_number(self.arrived_count, message="Car is already parked.")
+                    continue  # Proceed to another input
                 else:
                     # Proceed with parking logic
                     self.arrived_count += 1  # Increment the arrived count
@@ -202,12 +204,14 @@ class ParkingLot:
                 if not found_car:
                     # Display an error if the car is not found
                     self.get_plate_number(self.arrived_count, is_departure=True, message="Car cannot be found.")
+                    continue  # Proceed to another input
                 else:
                     # Check if there are any cars above the found car
                     car_index = self.cars_objects.index(found_car)
                     if car_index < len(self.cars_objects) - 1:
                         # There are cars above the found car
                         self.get_plate_number(self.arrived_count, is_departure=True, message="You cannot depart this car. There is a car parked above it.")
+                        continue  # Proceed to another input
                     else:
                         found_car.is_departing = True  # Mark the car as departing
                         self.waiting_for_input = False  # Allow the car to start moving
@@ -248,27 +252,38 @@ class ParkingLot:
                 pygame.display.flip()
                 self.clock.tick(60)
 
-    def show_license_plates(self):
-        self.screen.fill((255, 255, 255))  # Clear the screen with a white background
+    def show_cars_parked(self):
         font = pygame.font.SysFont(None, 36)
-        y_offset = 50
-        for plate in self.parked_cars:
-            text_surface = font.render(plate, True, (0, 0, 0))
-            self.screen.blit(text_surface, (50, y_offset))
-            y_offset += 40
-        pygame.display.flip()
-        pygame.time.wait(2000)  # Display for 2 seconds
+        back_button_font = pygame.font.SysFont(None, 48)
+        show_cars_parked_active = True
 
-    def show_parked_cars(self):
-        self.screen.fill((255, 255, 255))  # Clear the screen with a white background
-        y_offset = 50
-        for car in self.cars_objects:
-            car_image = pygame.image.load(car.image_path)
-            car_image = pygame.transform.scale(car_image, (self.scale_width, self.scale_height))
-            self.screen.blit(car_image, (50, y_offset))
-            y_offset += self.scale_height + 10
-        pygame.display.flip()
-        pygame.time.wait(2000)  # Display for 2 seconds
+        while show_cars_parked_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.back_button.collidepoint(event.pos):
+                        show_cars_parked_active = False
+
+            self.screen.fill((255, 255, 255))  # Clear the screen with a white background
+
+            # Draw the back button
+            pygame.draw.rect(self.screen, (0, 0, 0), self.back_button)
+            back_button_text = back_button_font.render("<", True, (255, 255, 255))
+            self.screen.blit(back_button_text, (self.back_button.x + 10, self.back_button.y + 5))
+
+            # Display the parked cars
+            y_offset = 50
+            for i, car in enumerate(self.cars_objects, start=1):
+                text_surface = font.render(f"Car number {i}: {car.plate_number}", True, (0, 0, 0))
+                self.screen.blit(text_surface, (50, y_offset))
+                car_image = pygame.image.load(car.image_path)
+                car_image = pygame.transform.scale(car_image, (self.scale_width, self.scale_height))
+                self.screen.blit(car_image, (400, y_offset - 10))
+                y_offset += 60
+
+            pygame.display.flip()
 
 class Car(pygame.sprite.Sprite):
     def __init__(self, x, y, image, scale_width, scale_height, target_y, plate_number=None, image_path=None):
