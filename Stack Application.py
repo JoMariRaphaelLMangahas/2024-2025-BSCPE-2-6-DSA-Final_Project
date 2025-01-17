@@ -1,5 +1,8 @@
 import pygame
 import sys
+import os
+
+os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 class ParkingLot:
     def __init__(self):
@@ -304,7 +307,7 @@ class Car(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (scale_width, scale_height))  # Scale the image
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
-        self.speed = 2  # Reduce speed to make the departure animation slower
+        self.speed = 5  # Reduce speed to make the departure animation slower
         self.target_y = target_y  # Target position for car to move to
         self.plate_number = plate_number  # Store the plate number
         self.is_departing = False  # Flag to indicate if the car is departing
