@@ -29,7 +29,7 @@ class ParkingLot:
 
         # Set initial positions and target positions for cars
         self.base_y = -self.scale_height  # Starting position off-screen at the top
-        self.queue_spacing = 40  # Decrease vertical spacing between cars (smaller gap)
+        self.queue_spacing = 55  # Decrease vertical spacing between cars (smaller gap)
 
         # Create more space at the bottom for the first car by shifting it down slightly
         self.max_target_y = self.screen.get_height() - self.scale_height - 15  # Start the first car 30px from the bottom side
@@ -96,7 +96,23 @@ class ParkingLot:
                                 message = "No plate number entered"
                                 message_timer = pygame.time.get_ticks()
                             else:
-                                return text, 'departure'
+                                plate_number_cleaned = text.strip().upper()
+                                found_car = None
+                                for car in self.cars_objects:
+                                    if car.plate_number.strip().upper() == plate_number_cleaned:
+                                        found_car = car
+                                        break
+
+                                if not found_car:
+                                    message = "Car cannot be found."
+                                    message_timer = pygame.time.get_ticks()
+                                else:
+                                    car_index = self.cars_objects.index(found_car)
+                                    if car_index < len(self.cars_objects) - 1:
+                                        message = "You cannot depart this car. There is a car parked above it."
+                                        message_timer = pygame.time.get_ticks()
+                                    else:
+                                        return text, 'departure'
                         if self.show_license_plate_button.collidepoint(event.pos):
                             self.show_license_plate()
                     if event.type == pygame.KEYDOWN:
@@ -180,11 +196,11 @@ class ParkingLot:
                 # Check if the car with the plate number already exists
                 existing_car = None
                 for car in self.cars_objects:
-                    if car.plate_number == plate_number:
+                    if car.plate_number.strip().upper() == plate_number.strip().upper():
                         existing_car = car
                         break
 
-                if plate_number.strip().upper() in [car.plate_number.strip().upper() for car in self.cars_objects]:
+                if existing_car:
                     # Display a message if the car is already parked
                     self.get_plate_number(self.arrived_count, message="Car is already parked.")
                     continue  # Proceed to another input
