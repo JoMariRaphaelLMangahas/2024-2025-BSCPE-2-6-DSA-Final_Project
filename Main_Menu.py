@@ -24,6 +24,45 @@ font = pygame.font.Font(None, 36)
 # Pause Menu Instance
 pause_menu = None  # Will be initialized later
 
+# Load the high-definition background image
+background_image = pygame.image.load('bgm_m.png')
+background_image = pygame.transform.smoothscale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Load button background images
+play_button_image = pygame.image.load('play.png')
+play_button_image = pygame.transform.smoothscale(play_button_image, (200, 75))  # Increased size
+
+quit_button_image = pygame.image.load('exit.png')
+quit_button_image = pygame.transform.smoothscale(quit_button_image, (200, 75))  # Increased size
+
+# Load case study background images
+case_study_backgrounds = {
+    "TIC-TAC-TOE": pygame.image.load('TICTACTOE.png'),
+    "STACKS APPLICATION": pygame.image.load('Stacks.png'),
+    "QUEUE APPLICATION": pygame.image.load('QUEUE.png'),
+    "BINARY TREE TRAVERSAL": pygame.image.load('BTT.png'),
+    "BINARY SEARCH TREE": pygame.image.load('BST.png'),
+    "TOWERS OF HANOI USING RECURSION": pygame.image.load('towerofhanoi.png'),
+    "SORTING": pygame.image.load('SORTING.png')
+}
+
+# Scale case study background images
+for key in case_study_backgrounds:
+    case_study_backgrounds[key] = pygame.transform.smoothscale(case_study_backgrounds[key], (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Load arrow and play button images for case studies
+left_arrow_image = pygame.image.load('leftarrow.png')
+left_arrow_image = pygame.transform.smoothscale(left_arrow_image, (50, 50))
+
+right_arrow_image = pygame.image.load('rightarrow.png')
+right_arrow_image = pygame.transform.smoothscale(right_arrow_image, (50, 50))
+
+play_case_button_image = pygame.image.load('play.png')
+play_case_button_image = pygame.transform.smoothscale(play_case_button_image, (200, 100))  # Increased size
+
+back_case_button_image = pygame.image.load('exit.png')
+back_case_button_image = pygame.transform.smoothscale(back_case_button_image, (100, 50))
+
 def draw_text(text, color, x, y, center=True, wrap_width=None):
     if wrap_width:
         words = text.split(' ')
@@ -64,16 +103,18 @@ class MainMenu:
         is_paused = False  # Flag to track if the game is paused
 
         while True:
-            screen.fill(BLACK)
+            screen.blit(background_image, (0, 0))  # Draw the background image
             
             if is_paused:
                 # Draw the pause menu when the game is paused
                 pause_menu.draw()
             else:
-                # Normal game content when not paused
-                draw_text("DSA FINAL PROJECT", WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4)
-                draw_text("PLAY", WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-                draw_text("QUIT", WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
+                # Draw button backgrounds
+                play_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 37.5, 200, 75)
+                quit_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 37.5, 200, 75)
+                
+                screen.blit(play_button_image, play_button_rect.topleft)
+                screen.blit(quit_button_image, quit_button_rect.topleft)
 
             pygame.display.flip()
 
@@ -84,11 +125,10 @@ class MainMenu:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
                     if not is_paused:
-                        if SCREEN_WIDTH // 2 - 50 < mouse_x < SCREEN_WIDTH // 2 + 50:
-                            if SCREEN_HEIGHT // 2 - 20 < mouse_y < SCREEN_HEIGHT // 2 + 20:
-                                PlayMenu().display()
-                            elif SCREEN_HEIGHT // 2 + 30 < mouse_y < SCREEN_HEIGHT // 2 + 70:
-                                ConfirmQuit().display()
+                        if play_button_rect.collidepoint(mouse_x, mouse_y):
+                            PlayMenu().display()
+                        elif quit_button_rect.collidepoint(mouse_x, mouse_y):
+                            ConfirmQuit().display()
                     else:
                         # Handle pause menu button clicks
                         pause_menu.handle_click((mouse_x, mouse_y))
@@ -128,16 +168,18 @@ class PlayMenu:
     def display(self):
         global screen, font
         while True:
-            screen.fill(BLACK)
+            screen.blit(case_study_backgrounds[self.case_studies[self.current_case]], (0, 0))  # Draw the case study background
 
-            draw_text(f"CASE STUDY {self.current_case + 1}", WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 8)
-            draw_text(self.case_studies[self.current_case], WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 6)
-            draw_text(self.case_details[self.case_studies[self.current_case]], WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3, center=True, wrap_width=600)
+            # Draw navigation and play buttons
+            left_arrow_rect = pygame.Rect(20, SCREEN_HEIGHT // 2 - 25, 50, 50)
+            right_arrow_rect = pygame.Rect(SCREEN_WIDTH - 70, SCREEN_HEIGHT // 2 - 25, 50, 50)
+            play_case_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 200, 100)  # Centered play button
+            back_button_rect = pygame.Rect(20, 20, 100, 50)
 
-            draw_text("<", WHITE, 50, SCREEN_HEIGHT // 2)
-            draw_text(">", WHITE, SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2)
-            draw_text("PLAY", GREEN, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 150)
-            draw_text("BACK", RED, 50, 50)
+            screen.blit(left_arrow_image, left_arrow_rect.topleft)
+            screen.blit(right_arrow_image, right_arrow_rect.topleft)
+            screen.blit(play_case_button_image, play_case_button_rect.topleft)
+            screen.blit(back_case_button_image, back_button_rect.topleft)
 
             pygame.display.flip()
 
@@ -149,15 +191,15 @@ class PlayMenu:
                     mouse_x, mouse_y = event.pos
 
                     # Previous button
-                    if 20 < mouse_x < 80 and SCREEN_HEIGHT // 2 - 20 < mouse_y < SCREEN_HEIGHT // 2 + 20:
+                    if left_arrow_rect.collidepoint(mouse_x, mouse_y):
                         self.current_case = (self.current_case - 1) % len(self.case_studies)
 
                     # Next button
-                    elif SCREEN_WIDTH - 80 < mouse_x < SCREEN_WIDTH - 20 and SCREEN_HEIGHT // 2 - 20 < mouse_y < SCREEN_HEIGHT // 2 + 20:
+                    elif right_arrow_rect.collidepoint(mouse_x, mouse_y):
                         self.current_case = (self.current_case + 1) % len(self.case_studies)
 
                     # Play button
-                    elif SCREEN_WIDTH // 2 - 50 < mouse_x < SCREEN_WIDTH // 2 + 50 and SCREEN_HEIGHT - 170 < mouse_y < SCREEN_HEIGHT - 130:
+                    if play_case_button_rect.collidepoint(mouse_x, mouse_y):
                         selected_case = self.case_studies[self.current_case]
                         print(f"You selected to play CASE STUDY {self.current_case + 1}: {self.case_studies[self.current_case]}")
 
@@ -169,7 +211,7 @@ class PlayMenu:
                                 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
                                 pygame.display.set_caption("DSA Final Project")
                                 return
-                        
+
                         elif selected_case == "STACKS APPLICATION":
                             from Stack_Application import ParkingLot
                             app = ParkingLot()
@@ -186,7 +228,7 @@ class PlayMenu:
                             app.run()
 
                     # Back button
-                    elif 20 < mouse_x < 100 and 20 < mouse_y < 80:
+                    elif back_button_rect.collidepoint(mouse_x, mouse_y):
                         return
 
 class ConfirmQuit:
@@ -211,6 +253,3 @@ class ConfirmQuit:
                             sys.exit()
                         elif SCREEN_HEIGHT // 2 + 30 < mouse_y < SCREEN_HEIGHT // 2 + 70:
                             return
-
-if __name__ == "__main__":
-    MainMenu().display()

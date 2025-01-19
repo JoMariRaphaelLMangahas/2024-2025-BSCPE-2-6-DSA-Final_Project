@@ -1,7 +1,7 @@
 import pygame
 import sys
 import os
-from Pause_Menu import PauseMenu
+from Pause_Menu import PauseMenu  # Import PauseMenu
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
@@ -12,7 +12,7 @@ class ParkingLot:
 
         # Set up screen and background
         self.screen = pygame.display.set_mode((800, 600))
-        self.bg = pygame.image.load('bg.png')
+        self.bg = pygame.image.load('bg_stacks.png')
         self.bg = pygame.transform.scale(self.bg, (int(self.screen.get_width() * 1), int(self.screen.get_height() * 1)))
 
         # Set up sprite groups
@@ -53,14 +53,16 @@ class ParkingLot:
         self.waiting_for_input = True
         self.arrived_count = 0  # Counter for the number of cars that have arrived
         self.departed_count = 0  # Counter for the number of cars that have departed
+        self.total_arrivals = 0  # Add this line to initialize total arrivals
 
         # Buttons
         self.show_license_plate_button = pygame.Rect(250, 540, 300, 50)
         self.back_button = pygame.Rect(10, 10, 50, 50)  # Back button
-        self.pause_button = pygame.Rect(10, 10, 50, 50)
 
         self.animation_in_progress = False  # Flag to indicate if animation is in progress
-        self.paused = False
+        self.pause_menu = PauseMenu(self.screen, pygame.font.SysFont(None, 48))  # Initialize PauseMenu
+        self.is_paused = False  # Pause state
+        self.pause_button = pygame.Rect(10, 10, 40, 40)  # Pause button
 
     def get_plate_number(self, arrived_count, is_departure=False, message=None):
         font = pygame.font.SysFont(None, 48)
@@ -88,8 +90,16 @@ class ParkingLot:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:  # Toggle pause menu with 'P' key
+                        self.is_paused = not self.is_paused
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.is_paused:
+                        self.pause_menu.handle_click(event.pos)
+                    elif self.pause_button.collidepoint(event.pos):
+                        self.is_paused = not self.is_paused
 
-                if not self.animation_in_progress:  # Disable input during animation
+                if not self.animation_in_progress and not self.is_paused:  # Disable input during animation and pause
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if button_rect_arrival.collidepoint(event.pos) and arrived_count < 10:  # Arrival button clicked
                             if not text.strip():
@@ -121,86 +131,93 @@ class ParkingLot:
                                         return text, 'departure'
                         if self.show_license_plate_button.collidepoint(event.pos):
                             self.show_license_plate()
-                        if self.pause_button.collidepoint(event.pos):
-                            self.paused = not self.paused  # Toggle pause state
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_BACKSPACE:
                             text = text[:-1]  # Remove last character on backspace
                         else:
                             text += event.unicode  # Add typed character
 
-            # Draw background and text input box
-            self.screen.fill((255, 255, 255))  # White background for the input screen
-
-            # Display the message if there is one
-            if message and pygame.time.get_ticks() - message_timer < 2000:  # Display message for 2 seconds
-                message_surface = font_message.render(message, True, (255, 0, 0))
-                message_rect = message_surface.get_rect(center=(self.screen.get_width() // 2, 50))
-                self.screen.blit(message_surface, message_rect)
+            if self.is_paused:
+                self.pause_menu.draw()
+                if self.pause_menu.action == "resume":
+                    self.is_paused = False
+                    self.pause_menu.action = None  # Reset the action
+                elif self.pause_menu.action == "main_menu":
+                    # Handle returning to the main menu
+                    self.pause_menu.action = None  # Reset the action
+                    # Implement main menu logic here if needed
             else:
-                message = None
+                # Draw background and text input box
+                self.screen.fill((255, 255, 255))  # White background for the input screen
 
-            # Display the message "Please enter your plate number" centered above the input box
-            prompt_message = font_message.render("Please enter your plate number", True, (0, 0, 0))
-            prompt_message_x = input_box.x + (input_box.width - prompt_message.get_width()) // 2  # Center horizontally
-            self.screen.blit(prompt_message, (prompt_message_x, input_box.y - 40))  # Position the message above the input box
-
-            # Display the message "Cars parked: n" below the input box, or "Parking full" if max cars reached
-            arrived_message = font_message.render(f"Cars parked: {arrived_count}" if arrived_count < 10 else "Parking full", True, (0, 0, 0))
-            self.screen.blit(arrived_message, (input_box.x + (input_box.width - arrived_message.get_width()) // 2, input_box.y + input_box.height + 10))
-
-            # Display arrival and departure counts below the "Cars parked" message
-            arrival_departure_message = font_message.render(f"Arrivals: {self.arrived_count}  Departures: {self.departed_count}", True, (0, 0, 0))
-            self.screen.blit(arrival_departure_message, (input_box.x + (input_box.width - arrival_departure_message.get_width()) // 2, input_box.y + input_box.height + 40))
-
-            # Draw the input box and the text inside
-            pygame.draw.rect(self.screen, (0, 0, 0), input_box, 2)  # Input box outline
-            txt_surface = font.render(text, True, (0, 0, 0))
-            self.screen.blit(txt_surface, (input_box.x + 10, input_box.y + 10))
-
-            # Blinking cursor
-            cursor_timer += clock.get_time()
-            if cursor_timer >= 500:
-                cursor_visible = not cursor_visible
-                cursor_timer = 0
-            if cursor_visible:
-                cursor_rect = pygame.Rect(input_box.x + 10 + txt_surface.get_width(), input_box.y + 10, 2, font.get_height())
-                pygame.draw.rect(self.screen, (0, 0, 0), cursor_rect)
-
-            # Draw the "Arrival" button
-            if arrived_count < 10:
-                if button_rect_arrival.collidepoint(pygame.mouse.get_pos()):  # Hover effect
-                    pygame.draw.rect(self.screen, button_hover_color, button_rect_arrival)
+                # Display the message if there is one
+                if message and pygame.time.get_ticks() - message_timer < 2000:  # Display message for 2 seconds
+                    message_surface = font_message.render(message, True, (255, 0, 0))
+                    message_rect = message_surface.get_rect(center=(self.screen.get_width() // 2, 50))
+                    self.screen.blit(message_surface, message_rect)
                 else:
-                    pygame.draw.rect(self.screen, button_color, button_rect_arrival)
-            else:
-                pygame.draw.rect(self.screen, arrival_button_disabled_color, button_rect_arrival)
+                    message = None
 
-            button_text_arrival = font_message.render("Arrival", True, (255, 255, 255))
-            self.screen.blit(button_text_arrival, (button_rect_arrival.x + (button_rect_arrival.width - button_text_arrival.get_width()) // 2, 
-                                            button_rect_arrival.y + (button_rect_arrival.height - button_text_arrival.get_height()) // 2))
+                # Display the message "Please enter your plate number" centered above the input box
+                prompt_message = font_message.render("Please enter your plate number", True, (0, 0, 0))
+                prompt_message_x = input_box.x + (input_box.width - prompt_message.get_width()) // 2  # Center horizontally
+                self.screen.blit(prompt_message, (prompt_message_x, input_box.y - 40))  # Position the message above the input box
 
-            # Draw the "Departure" button
-            if button_rect_departure.collidepoint(pygame.mouse.get_pos()):  # Hover effect
-                pygame.draw.rect(self.screen, departure_button_hover_color, button_rect_departure)
-            else:
-                pygame.draw.rect(self.screen, departure_button_color, button_rect_departure)
+                # Display the message "Cars parked: n" below the input box, or "Parking full" if max cars reached
+                arrived_message = font_message.render(f"Cars parked: {arrived_count}" if arrived_count < 10 else "Parking full", True, (0, 0, 0))
+                self.screen.blit(arrived_message, (input_box.x + (input_box.width - arrived_message.get_width()) // 2, input_box.y + input_box.height + 10))
 
-            button_text_departure = font_message.render("Departure", True, (255, 255, 255))
-            self.screen.blit(button_text_departure, (button_rect_departure.x + (button_rect_departure.width - button_text_departure.get_width()) // 2, 
-                                            button_rect_departure.y + (button_rect_departure.height - button_text_departure.get_height()) // 2))
+                # Display arrival and departure counts below the "Cars parked" message
+                arrival_departure_message = font_message.render(f"Arrivals: {self.total_arrivals}  Departures: {self.departed_count}", True, (0, 0, 0))
+                self.screen.blit(arrival_departure_message, (input_box.x + (input_box.width - arrival_departure_message.get_width()) // 2, input_box.y + input_box.height + 40))
 
-            # Draw the "Show License Plate" button
-            pygame.draw.rect(self.screen, (0, 0, 255), self.show_license_plate_button)
-            show_license_plate_text = font_message.render("Show License Plate", True, (255, 255, 255))
-            self.screen.blit(show_license_plate_text, (self.show_license_plate_button.x + (self.show_license_plate_button.width - show_license_plate_text.get_width()) // 2, 
-                                                    self.show_license_plate_button.y + (self.show_license_plate_button.height - show_license_plate_text.get_height()) // 2))
+                # Draw the input box and the text inside
+                pygame.draw.rect(self.screen, (0, 0, 0), input_box, 2)  # Input box outline
+                txt_surface = font.render(text, True, (0, 0, 0))
+                self.screen.blit(txt_surface, (input_box.x + 10, input_box.y + 10))
 
-            # Draw the pause button
-            pygame.draw.rect(self.screen, (0, 0, 0, 0), self.pause_button)  # Transparent background
-            pause_button_text = font.render("||", True, (0, 0, 0))  # Black text
-            self.screen.blit(pause_button_text, (self.pause_button.x + (self.pause_button.width - pause_button_text.get_width()) // 2, 
-                                                self.pause_button.y + (self.pause_button.height - pause_button_text.get_height()) // 2))
+                # Blinking cursor
+                cursor_timer += clock.get_time()
+                if cursor_timer >= 500:
+                    cursor_visible = not cursor_visible
+                    cursor_timer = 0
+                if cursor_visible:
+                    cursor_rect = pygame.Rect(input_box.x + 10 + txt_surface.get_width(), input_box.y + 10, 2, font.get_height())
+                    pygame.draw.rect(self.screen, (0, 0, 0), cursor_rect)
+
+                # Draw the "Arrival" button
+                if arrived_count < 10:
+                    if button_rect_arrival.collidepoint(pygame.mouse.get_pos()):  # Hover effect
+                        pygame.draw.rect(self.screen, button_hover_color, button_rect_arrival)
+                    else:
+                        pygame.draw.rect(self.screen, button_color, button_rect_arrival)
+                else:
+                    pygame.draw.rect(self.screen, arrival_button_disabled_color, button_rect_arrival)
+
+                button_text_arrival = font_message.render("Arrival", True, (255, 255, 255))
+                self.screen.blit(button_text_arrival, (button_rect_arrival.x + (button_rect_arrival.width - button_text_arrival.get_width()) // 2, 
+                                                button_rect_arrival.y + (button_rect_arrival.height - button_text_arrival.get_height()) // 2))
+
+                # Draw the "Departure" button
+                if button_rect_departure.collidepoint(pygame.mouse.get_pos()):  # Hover effect
+                    pygame.draw.rect(self.screen, departure_button_hover_color, button_rect_departure)
+                else:
+                    pygame.draw.rect(self.screen, departure_button_color, button_rect_departure)
+
+                button_text_departure = font_message.render("Departure", True, (255, 255, 255))
+                self.screen.blit(button_text_departure, (button_rect_departure.x + (button_rect_departure.width - button_text_departure.get_width()) // 2, 
+                                                button_rect_departure.y + (button_rect_departure.height - button_text_departure.get_height()) // 2))
+
+                # Draw the "Show License Plate" button
+                pygame.draw.rect(self.screen, (0, 0, 255), self.show_license_plate_button)
+                show_license_plate_text = font_message.render("Show License Plate", True, (255, 255, 255))
+                self.screen.blit(show_license_plate_text, (self.show_license_plate_button.x + (self.show_license_plate_button.width - show_license_plate_text.get_width()) // 2, 
+                                                        self.show_license_plate_button.y + (self.show_license_plate_button.height - show_license_plate_text.get_height()) // 2))
+
+                # Draw the pause button
+                pygame.draw.rect(self.screen, (0, 0, 0), self.pause_button)
+                pause_text = font.render("||", True, (255, 255, 255))
+                self.screen.blit(pause_text, (self.pause_button.x + 10, self.pause_button.y + 5))
 
             pygame.display.flip()
             clock.tick(30)
@@ -212,11 +229,25 @@ class ParkingLot:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:  # Toggle pause menu with 'P' key
+                        self.is_paused = not self.is_paused
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.pause_button.collidepoint(event.pos):
-                        self.paused = not self.paused  # Toggle pause state
+                    if self.is_paused:
+                        self.pause_menu.handle_click(event.pos)
+                    elif self.pause_button.collidepoint(event.pos):
+                        self.is_paused = not self.is_paused
 
-            if not self.paused:
+            if self.is_paused:
+                self.pause_menu.draw()
+                if self.pause_menu.action == "resume":
+                    self.is_paused = False
+                    self.pause_menu.action = None  # Reset the action
+                elif self.pause_menu.action == "main_menu":
+                    # Handle returning to the main menu
+                    self.pause_menu.action = None  # Reset the action
+                    # Implement main menu logic here if needed
+            else:
                 # Step 1: Get plate number for the current car using the "Arrival" button
                 plate_number, action = self.get_plate_number(len(self.cars_objects))
 
@@ -233,8 +264,9 @@ class ParkingLot:
                         self.get_plate_number(len(self.cars_objects), message="Car is already parked.")
                         continue  # Proceed to another input
                     else:
-                        # Proceed with parking logic
-                        self.arrived_count = len(self.cars_objects) + 1  # Update the arrived count
+                        # Increment arrival counts correctly
+                        self.total_arrivals += 1  # Increment total arrivals
+                        self.arrived_count += 1  # Increment the arrived count directly
 
                         # Step 2: Animate the car
                         self.current_car += 1  # Move to the next car
@@ -245,7 +277,7 @@ class ParkingLot:
                         car = Car(x, y, self.car_images[self.current_car % len(self.car_images)], self.scale_width, self.scale_height, target_y, plate_number, self.car_images[self.current_car % len(self.car_images)])
                         self.all_sprites.add(car)
                         self.cars_objects.append(car)
-                        self.parked_cars.append(plate_number)  # Add the plate number to the parked cars list
+                        self.parked_cars.append(plate_number)
 
                 elif action == 'departure':
                     # Strip spaces and make case-insensitive comparison
@@ -298,7 +330,6 @@ class ParkingLot:
                                 self.all_sprites.remove(car)
                                 self.cars_objects.remove(car)
                                 self.parked_cars.remove(car.plate_number)
-                                self.current_car -= 1  # Adjust the current car index
                                 pygame.time.delay(500)  # 500 milliseconds = 0.5 seconds delay after car leaves
                                 self.waiting_for_input = True  # Allow input after car departs
 
@@ -310,21 +341,9 @@ class ParkingLot:
                     self.clock.tick(60)
 
                 self.animation_in_progress = False
-            else:
-                self.screen.fill((0, 0, 0, 0))  # Transparent background when paused
-                pause_text = font.render("Paused", True, (255, 255, 255))
-                self.screen.blit(pause_text, (self.screen.get_width() // 2 - pause_text.get_width() // 2, self.screen.get_height() // 2 - pause_text.get_height() // 2))
+
                 pygame.display.flip()
-                self.clock.tick(30)
-
-            # Draw the pause button
-            pygame.draw.rect(self.screen, (0, 0, 0, 0), self.pause_button)  # Transparent background
-            pause_button_text = font.render("||", True, (0, 0, 0))  # Black text
-            self.screen.blit(pause_button_text, (self.pause_button.x + (self.pause_button.width - pause_button_text.get_width()) // 2, 
-                                                self.pause_button.y + (self.pause_button.height - pause_button_text.get_height()) // 2))
-
-            pygame.display.flip()
-            self.clock.tick(60)
+                self.clock.tick(60)
 
     def show_license_plate(self):
         font = pygame.font.SysFont(None, 36)

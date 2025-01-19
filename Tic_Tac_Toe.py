@@ -8,25 +8,28 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'
 class TicTacToe:
     def __init__(self):
         pygame.init()
-        self.WIDTH, self.HEIGHT = 600, 600
+        self.WIDTH, self.HEIGHT = 800, 700  # Window size
+        self.BOARD_SIZE = 400  # Smaller game board size
+        self.TOP_SPACE = 50  # Space at the top
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Tic Tac Toe")
         self.font = pygame.font.Font(None, 36)
         self.LINE_WIDTH = 15
         self.BOARD_ROWS, self.BOARD_COLS = 3, 3
-        self.SQUARE_SIZE = self.WIDTH // self.BOARD_COLS
+        self.SQUARE_SIZE = self.BOARD_SIZE // self.BOARD_COLS
         self.CIRCLE_RADIUS = self.SQUARE_SIZE // 3
         self.CIRCLE_WIDTH = 15
         self.CROSS_WIDTH = 25
         self.SPACE = self.SQUARE_SIZE // 4
 
-        self.BG_COLOR = (255, 255, 255)  # Set background color to white
-        self.LINE_COLOR = (186, 85, 211)
-        self.CIRCLE_COLOR = (216, 191, 216)
-        self.CROSS_COLOR = (138, 43, 226)
-        self.BUTTON_COLOR = (221, 160, 221)
-        self.TEXT_COLOR = (75, 0, 130)
-        self.BORDER_COLOR = (255, 0, 246)
+        self.BG_COLOR = (34, 139, 34)  # Forest Green background color
+        self.LINE_COLOR = (0, 100, 0)  # Dark Green line color
+        self.CIRCLE_COLOR = (0, 255, 127)  # Spring Green circle color
+        self.CROSS_COLOR = (70, 205, 25)  # Green cross color
+        self.BUTTON_COLOR = (60, 179, 113)  # Medium Sea Green button color
+        self.TEXT_COLOR = (255, 255, 255)  # White text color
+        self.BORDER_COLOR = (0, 100, 0)  # Dark Green border color
+
 
         self.board = [[0 for _ in range(self.BOARD_COLS)] for _ in range(self.BOARD_ROWS)]
         self.paused = False
@@ -38,20 +41,27 @@ class TicTacToe:
         # Initialize the PauseMenu
         self.pause_menu = PauseMenu(self.screen, self.font)
 
+        # Load the background image
+        self.background_image = pygame.image.load('bg1.png')
+        self.background_image = pygame.transform.smoothscale(self.background_image, (self.WIDTH, self.HEIGHT))
+
     def draw_lines(self):
         for row in range(1, self.BOARD_ROWS):
-            pygame.draw.line(self.screen, self.LINE_COLOR, (0, row * self.SQUARE_SIZE), (self.WIDTH, row * self.SQUARE_SIZE), self.LINE_WIDTH)
+            pygame.draw.line(self.screen, self.LINE_COLOR, (self.board_x, row * self.SQUARE_SIZE + self.board_y), (self.board_x + self.BOARD_SIZE, row * self.SQUARE_SIZE + self.board_y), self.LINE_WIDTH)
         for col in range(1, self.BOARD_COLS):
-            pygame.draw.line(self.screen, self.LINE_COLOR, (col * self.SQUARE_SIZE, 0), (col * self.SQUARE_SIZE, self.HEIGHT), self.LINE_WIDTH)
+            pygame.draw.line(self.screen, self.LINE_COLOR, (col * self.SQUARE_SIZE + self.board_x, self.board_y), (col * self.SQUARE_SIZE + self.board_x, self.board_y + self.BOARD_SIZE), self.LINE_WIDTH)
+
+    def draw_border(self):
+        pygame.draw.rect(self.screen, self.BORDER_COLOR, (self.board_x, self.board_y, self.BOARD_SIZE, self.BOARD_SIZE), self.LINE_WIDTH)
 
     def draw_figures(self):
         for row in range(self.BOARD_ROWS):
             for col in range(self.BOARD_COLS):
                 if self.board[row][col] == 1:
-                    pygame.draw.circle(self.screen, self.CIRCLE_COLOR, (col * self.SQUARE_SIZE + self.SQUARE_SIZE // 2, row * self.SQUARE_SIZE + self.SQUARE_SIZE // 2), self.CIRCLE_RADIUS, self.CIRCLE_WIDTH)
+                    pygame.draw.circle(self.screen, self.CIRCLE_COLOR, (col * self.SQUARE_SIZE + self.SQUARE_SIZE // 2 + self.board_x, row * self.SQUARE_SIZE + self.SQUARE_SIZE // 2 + self.board_y), self.CIRCLE_RADIUS, self.CIRCLE_WIDTH)
                 elif self.board[row][col] == 2:
-                    pygame.draw.line(self.screen, self.CROSS_COLOR, (col * self.SQUARE_SIZE + self.SPACE, row * self.SQUARE_SIZE + self.SPACE), (col * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE, row * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE), self.CROSS_WIDTH)
-                    pygame.draw.line(self.screen, self.CROSS_COLOR, (col * self.SQUARE_SIZE + self.SPACE, row * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE), (col * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE, row * self.SQUARE_SIZE + self.SPACE), self.CROSS_WIDTH)
+                    pygame.draw.line(self.screen, self.CROSS_COLOR, (col * self.SQUARE_SIZE + self.SPACE + self.board_x, row * self.SQUARE_SIZE + self.SPACE + self.board_y), (col * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE + self.board_x, row * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE + self.board_y), self.CROSS_WIDTH)
+                    pygame.draw.line(self.screen, self.CROSS_COLOR, (col * self.SQUARE_SIZE + self.SPACE + self.board_x, row * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE + self.board_y), (col * self.SQUARE_SIZE + self.SQUARE_SIZE - self.SPACE + self.board_x, row * self.SQUARE_SIZE + self.SPACE + self.board_y), self.CROSS_WIDTH)
 
     def draw_button(self):
         pygame.draw.rect(self.screen, self.BUTTON_COLOR, (10, 10, 50, 50))
@@ -62,7 +72,7 @@ class TicTacToe:
             pygame.draw.line(self.screen, self.TEXT_COLOR, (40, 20), (40, 50), 10)  # Pause symbol part 2
 
     def display_message(self, message):
-        message_rect = pygame.Rect(0, self.HEIGHT // 2 - 50, self.WIDTH, 100)
+        message_rect = pygame.Rect(self.WIDTH // 4, self.HEIGHT // 2 - 50, self.WIDTH // 2, 100)
         pygame.draw.rect(self.screen, self.BORDER_COLOR, message_rect)
         pygame.draw.rect(self.screen, self.LINE_COLOR, message_rect, 3)  # Draw border
         text = self.font.render(message, True, self.TEXT_COLOR)
@@ -106,26 +116,27 @@ class TicTacToe:
         return False
 
     def draw_horizontal_win_line(self, row, player):
-        posY = row * self.SQUARE_SIZE + self.SQUARE_SIZE // 2
+        posY = row * self.SQUARE_SIZE + self.SQUARE_SIZE // 2 + self.board_y
         color = self.CIRCLE_COLOR if player == 1 else self.CROSS_COLOR
-        pygame.draw.line(self.screen, color, (15, posY), (self.WIDTH - 15, posY), self.LINE_WIDTH)
+        pygame.draw.line(self.screen, color, (self.board_x, posY), (self.board_x + self.BOARD_SIZE, posY), self.LINE_WIDTH)
 
     def draw_vertical_win_line(self, col, player):
-        posX = col * self.SQUARE_SIZE + self.SQUARE_SIZE // 2
+        posX = col * self.SQUARE_SIZE + self.SQUARE_SIZE // 2 + self.board_x
         color = self.CIRCLE_COLOR if player == 1 else self.CROSS_COLOR
-        pygame.draw.line(self.screen, color, (posX, 15), (posX, self.HEIGHT - 15), self.LINE_WIDTH)
+        pygame.draw.line(self.screen, color, (posX, self.board_y), (posX, self.board_y + self.BOARD_SIZE), self.LINE_WIDTH)
 
     def draw_asc_diagonal(self, player):
         color = self.CIRCLE_COLOR if player == 1 else self.CROSS_COLOR
-        pygame.draw.line(self.screen, color, (15, self.HEIGHT - 15), (self.WIDTH - 15, 15), self.LINE_WIDTH)
+        pygame.draw.line(self.screen, color, (self.board_x, self.board_y + self.BOARD_SIZE), (self.board_x + self.BOARD_SIZE, self.board_y), self.LINE_WIDTH)
 
     def draw_desc_diagonal(self, player):
         color = self.CIRCLE_COLOR if player == 1 else self.CROSS_COLOR
-        pygame.draw.line(self.screen, color, (15, 15), (self.WIDTH - 15, self.HEIGHT - 15), self.LINE_WIDTH)
+        pygame.draw.line(self.screen, color, (self.board_x, self.board_y), (self.board_x + self.BOARD_SIZE, self.board_y + self.BOARD_SIZE), self.LINE_WIDTH)
 
     def restart(self):
         self.screen.fill(self.BG_COLOR)
         self.draw_lines()
+        self.draw_border()
         self.draw_button()
         for row in range(self.BOARD_ROWS):
             for col in range(self.BOARD_COLS):
@@ -136,20 +147,20 @@ class TicTacToe:
         self.paused = False
 
     def draw_play_again_button(self):
-        pygame.draw.rect(self.screen, self.BUTTON_COLOR, (self.WIDTH // 2 - 100, self.HEIGHT // 2 + 50, 200, 50))
+        pygame.draw.rect(self.screen, self.BUTTON_COLOR, (self.WIDTH // 2 - 100, self.HEIGHT - 150, 200, 50))
         text = self.font.render("Play Again", True, self.TEXT_COLOR)
-        self.screen.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT // 2 + 60))
+        self.screen.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT - 140))
 
     def draw_main_menu_button(self):
-        pygame.draw.rect(self.screen, self.BUTTON_COLOR, (self.WIDTH // 2 - 100, self.HEIGHT // 2 + 120, 200, 50))
+        pygame.draw.rect(self.screen, self.BUTTON_COLOR, (self.WIDTH // 2 - 100, self.HEIGHT - 80, 200, 50))
         text = self.font.render("Main Menu", True, self.TEXT_COLOR)
-        self.screen.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT // 2 + 130))
+        self.screen.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT - 70))
 
     def handle_play_again(self, mouseX, mouseY):
-        return self.WIDTH // 2 - 100 <= mouseX <= self.WIDTH // 2 + 100 and self.HEIGHT // 2 + 50 <= mouseY <= self.HEIGHT // 2 + 100
+        return self.WIDTH // 2 - 100 <= mouseX <= self.WIDTH // 2 + 100 and self.HEIGHT - 150 <= mouseY <= self.HEIGHT - 100
 
     def handle_main_menu(self, mouseX, mouseY):
-        return self.WIDTH // 2 - 100 <= mouseX <= self.WIDTH // 2 + 100 and self.HEIGHT // 2 + 120 <= mouseY <= self.HEIGHT // 2 + 170
+        return self.WIDTH // 2 - 100 <= mouseX <= self.WIDTH // 2 + 100 and self.HEIGHT - 80 <= mouseY <= self.HEIGHT - 30
 
     def toggle_pause(self):
         self.paused = not self.paused
@@ -157,8 +168,11 @@ class TicTacToe:
         self.show_message = "Game Paused" if self.paused else None
 
     def run(self):
+        self.board_x = (self.WIDTH - self.BOARD_SIZE) // 2
+        self.board_y = self.HEIGHT - self.BOARD_SIZE - 50  # Centered at the bottom part
+
         while self.running:
-            self.screen.fill(self.BG_COLOR)  # Fill the screen with the background color at the beginning of each frame
+            self.screen.blit(self.background_image, (0, 0))  # Draw the background image
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -172,6 +186,7 @@ class TicTacToe:
                         self.draw_button()
                         self.screen.fill(self.BG_COLOR, (0, self.HEIGHT // 2 - 50, self.WIDTH, 100))  # Clear message area
                         self.draw_lines()  # Redraw lines to ensure they are not broken
+                        self.draw_border()  # Redraw border to ensure it is not broken
                         self.draw_figures()  # Redraw figures to ensure they are not broken
                         continue  # Skip the rest of the loop to avoid placing X or O
 
@@ -190,8 +205,8 @@ class TicTacToe:
                                 return "main_menu"
 
                         if not self.winner:
-                            clicked_row = mouseY // self.SQUARE_SIZE
-                            clicked_col = mouseX // self.SQUARE_SIZE
+                            clicked_row = (mouseY - self.board_y) // self.SQUARE_SIZE
+                            clicked_col = (mouseX - self.board_x) // self.SQUARE_SIZE
 
                             if 0 <= clicked_row < self.BOARD_ROWS and 0 <= clicked_col < self.BOARD_COLS:
                                 if self.available_square(clicked_row, clicked_col):
@@ -209,6 +224,7 @@ class TicTacToe:
                         self.restart()
 
             self.draw_lines()  # Ensure lines are drawn
+            self.draw_border()  # Ensure border is drawn
             self.draw_figures()  # Ensure figures are drawn
             self.draw_button()  # Ensure the pause button is drawn on top
 
@@ -234,3 +250,7 @@ class TicTacToe:
 
         pygame.quit()
         sys.exit()
+
+if __name__ == "__main__":
+    game = TicTacToe()
+    game.run()
