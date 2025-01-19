@@ -294,7 +294,3 @@ class BinarySearchTreeApp:
             result_text = self.font.render(result_str, True, (0, 0, 0))
             self.screen.blit(result_text, (50, y_offset))
             y_offset += 50
-
-if __name__ == "__main__":
-    app = BinarySearchTreeApp()
-    app.run()

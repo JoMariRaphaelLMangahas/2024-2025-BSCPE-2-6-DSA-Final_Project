@@ -312,7 +312,3 @@ class Application:
             self.clock.tick(30)
 
         pygame.quit()
-
-if __name__ == "__main__":
-    app = Application()
-    app.run()
