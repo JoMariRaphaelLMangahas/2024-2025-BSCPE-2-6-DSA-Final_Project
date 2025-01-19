@@ -169,6 +169,11 @@ class PlayMenu:
                                 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
                                 pygame.display.set_caption("DSA Final Project")
                                 return
+                        
+                        elif selected_case == "STACKS APPLICATION":
+                            from Stack_Application import ParkingLot
+                            app = ParkingLot()
+                            app.run()
 
                         elif selected_case == "BINARY TREE TRAVERSAL":
                             from Binary_Tree_Traversal import Application
