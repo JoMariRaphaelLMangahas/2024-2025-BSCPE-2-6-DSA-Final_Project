@@ -404,7 +404,3 @@ class Car(pygame.sprite.Sprite):
                 self.rect.y -= self.speed  # Move the car up
             else:
                 self.kill()  # Remove the car from the sprite group once it goes off the screen
-
-if __name__ == "__main__":
-    parking_lot = ParkingLot()
-    parking_lot.run()
