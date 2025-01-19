@@ -95,6 +95,8 @@ class BinarySearchTreeApp:
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Binary Search Tree")
         self.font = pygame.font.Font(None, 36)
+        self.bold_font = pygame.font.Font(None, 36)
+        self.bold_font.set_bold(True)
         self.clock = pygame.time.Clock()
 
         self.bst = BinarySearchTree()
@@ -175,7 +177,7 @@ class BinarySearchTreeApp:
                     if self.pause_menu.is_open:
                         self.pause_menu.handle_click(event.pos)
                     elif pygame.Rect(10, 10, 40, 40).collidepoint(event.pos):
-                        self.is_paused = True
+                        self.is_paused = not self.is_paused
                         self.pause_menu.toggle()
 
             if event.type == pygame.KEYDOWN:
@@ -220,8 +222,11 @@ class BinarySearchTreeApp:
         pygame.display.flip()
 
     def draw_pause_menu_button(self):
-        pygame.draw.rect(self.screen, (0, 0, 0), (10, 10, 40, 40))
-        text = self.font.render("lll", True, (255, 255, 255))
+        pygame.draw.rect(self.screen, (255, 255, 255), (10, 10, 40, 40))
+        if self.is_paused:
+            text = self.bold_font.render("▶", True, (0, 0, 0))
+        else:
+            text = self.bold_font.render("||", True, (0, 0, 0))
         self.screen.blit(text, (20, 20))
 
     def display_main(self):
@@ -294,3 +299,7 @@ class BinarySearchTreeApp:
             result_text = self.font.render(result_str, True, (0, 0, 0))
             self.screen.blit(result_text, (50, y_offset))
             y_offset += 50
+
+if __name__ == "__main__":
+    app = BinarySearchTreeApp()
+    app.run()
