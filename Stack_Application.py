@@ -146,6 +146,14 @@ class ParkingLot:
                     # Handle returning to the main menu
                     self.pause_menu.action = None  # Reset the action
                     # Implement main menu logic here if needed
+                # Draw the play button
+                pygame.draw.rect(self.screen, (255, 255, 255), self.pause_button)
+                play_button_points = [
+                    (self.pause_button.x + 10, self.pause_button.y + 5),
+                    (self.pause_button.x + 10, self.pause_button.y + 35),
+                    (self.pause_button.x + 30, self.pause_button.y + 20)
+                ]
+                pygame.draw.polygon(self.screen, (0, 0, 0), play_button_points)
             else:
                 # Draw background and text input box
                 self.screen.fill((255, 255, 255))  # White background for the input screen
@@ -215,8 +223,9 @@ class ParkingLot:
                                                         self.show_license_plate_button.y + (self.show_license_plate_button.height - show_license_plate_text.get_height()) // 2))
 
                 # Draw the pause button
-                pygame.draw.rect(self.screen, (0, 0, 0), self.pause_button)
-                pause_text = font.render("||", True, (255, 255, 255))
+                pygame.draw.rect(self.screen, (255, 255, 255), self.pause_button)
+                bold_font = pygame.font.SysFont(None, 48, bold=True)  # Define bold font
+                pause_text = bold_font.render("||", True, (0, 0, 0), (255, 255, 255))  # Bold text with background color
                 self.screen.blit(pause_text, (self.pause_button.x + 10, self.pause_button.y + 5))
 
             pygame.display.flip()
@@ -247,7 +256,21 @@ class ParkingLot:
                     # Handle returning to the main menu
                     self.pause_menu.action = None  # Reset the action
                     # Implement main menu logic here if needed
+                # Draw the play button
+                pygame.draw.rect(self.screen, (255, 255, 255), self.pause_button)
+                play_button_points = [
+                    (self.pause_button.x + 10, self.pause_button.y + 5),
+                    (self.pause_button.x + 10, self.pause_button.y + 35),
+                    (self.pause_button.x + 30, self.pause_button.y + 20)
+                ]
+                pygame.draw.polygon(self.screen, (0, 0, 0), play_button_points)
             else:
+                # Draw the pause button
+                pygame.draw.rect(self.screen, (255, 255, 255), self.pause_button)
+                bold_font = pygame.font.SysFont(None, 48, bold=True)  # Define bold font
+                pause_text = bold_font.render("||", True, (0, 0, 0), (255, 255, 255))  # Bold text with background color
+                self.screen.blit(pause_text, (self.pause_button.x + 10, self.pause_button.y + 5))
+
                 # Step 1: Get plate number for the current car using the "Arrival" button
                 plate_number, action = self.get_plate_number(len(self.cars_objects))
 
@@ -345,7 +368,7 @@ class ParkingLot:
 
                 pygame.display.flip()
                 self.clock.tick(60)
-
+        
     def show_license_plate(self):
         font = pygame.font.SysFont(None, 36)
         back_button_font = pygame.font.SysFont(None, 48)
@@ -404,3 +427,7 @@ class Car(pygame.sprite.Sprite):
                 self.rect.y -= self.speed  # Move the car up
             else:
                 self.kill()  # Remove the car from the sprite group once it goes off the screen
+
+if __name__ == "__main__":
+    app = ParkingLot()
+    app.run()
