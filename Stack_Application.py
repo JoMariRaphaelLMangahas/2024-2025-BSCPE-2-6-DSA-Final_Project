@@ -302,7 +302,6 @@ class ParkingLot:
                         else:
                             found_car.is_departing = True  # Mark the car as departing
                             self.waiting_for_input = False  # Allow the car to start moving
-                            self.departed_count += 1  # Update the departed count
 
                 # Step 2: Animate the car if there are still cars
                 while not self.waiting_for_input:
@@ -331,6 +330,8 @@ class ParkingLot:
                                 self.cars_objects.remove(car)
                                 self.parked_cars.remove(car.plate_number)
                                 pygame.time.delay(500)  # 500 milliseconds = 0.5 seconds delay after car leaves
+                                self.departed_count += 1  # Update the departed count after the car leaves
+                                self.current_car -= 1  # Decrement the current car index
                                 self.waiting_for_input = True  # Allow input after car departs
 
                     # Draw background and sprites
