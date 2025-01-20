@@ -2,6 +2,8 @@ import os
 import pygame
 import sys
 from Pause_Menu import PauseMenu
+# Add the Pictures folder to the Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'Pictures'))
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
