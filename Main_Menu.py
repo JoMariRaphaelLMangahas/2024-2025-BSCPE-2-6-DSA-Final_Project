@@ -28,25 +28,25 @@ font = pygame.font.Font(None, 36)
 pause_menu = None  # Will be initialized later
 
 # Load the high-definition background image
-background_image = pygame.image.load('bgm_m.png')
+background_image = pygame.image.load('Pictures/Main Menu/bgm_m.png')
 background_image = pygame.transform.smoothscale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load button background images
-play_button_image = pygame.image.load('play.png')
+play_button_image = pygame.image.load('Pictures/Main Menu/play.png')
 play_button_image = pygame.transform.smoothscale(play_button_image, (200, 75))  # Increased size
 
-quit_button_image = pygame.image.load('exit.png')
+quit_button_image = pygame.image.load('Pictures/Main Menu/exit.png')
 quit_button_image = pygame.transform.smoothscale(quit_button_image, (200, 75))  # Increased size
 
 # Load case study background images
 case_study_backgrounds = {
-    "TIC-TAC-TOE": pygame.image.load('TICTACTOE.png'),
-    "STACKS APPLICATION": pygame.image.load('Stacks.png'),
-    "QUEUE APPLICATION": pygame.image.load('QUEUE.png'),
-    "BINARY TREE TRAVERSAL": pygame.image.load('BTT.png'),
-    "BINARY SEARCH TREE": pygame.image.load('BST.png'),
-    "TOWERS OF HANOI USING RECURSION": pygame.image.load('towerofhanoi.png'),
-    "SORTING": pygame.image.load('SORTING.png')
+    "TIC-TAC-TOE": pygame.image.load('Pictures/Main Menu/TICTACTOE.png'),
+    "STACKS APPLICATION": pygame.image.load('Pictures/Main Menu/Stacks.png'),
+    "QUEUE APPLICATION": pygame.image.load('Pictures/Main Menu/QUEUE.png'),
+    "BINARY TREE TRAVERSAL": pygame.image.load('Pictures/Main Menu/BTT.png'),
+    "BINARY SEARCH TREE": pygame.image.load('Pictures/Main Menu/BST.png'),
+    "TOWERS OF HANOI USING RECURSION": pygame.image.load('Pictures/Main Menu/towerofhanoi.png'),
+    "SORTING": pygame.image.load('Pictures/Main Menu/SORTING.png')
 }
 
 # Scale case study background images
@@ -54,16 +54,16 @@ for key in case_study_backgrounds:
     case_study_backgrounds[key] = pygame.transform.smoothscale(case_study_backgrounds[key], (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Load arrow and play button images for case studies
-left_arrow_image = pygame.image.load('leftarrow.png')
+left_arrow_image = pygame.image.load('Pictures/Main Menu/leftarrow.png')
 left_arrow_image = pygame.transform.smoothscale(left_arrow_image, (50, 50))
 
-right_arrow_image = pygame.image.load('rightarrow.png')
+right_arrow_image = pygame.image.load('Pictures/Main Menu/rightarrow.png')
 right_arrow_image = pygame.transform.smoothscale(right_arrow_image, (50, 50))
 
-play_case_button_image = pygame.image.load('play.png')
+play_case_button_image = pygame.image.load('Pictures/Main Menu/play.png')
 play_case_button_image = pygame.transform.smoothscale(play_case_button_image, (200, 100))  # Increased size
 
-back_case_button_image = pygame.image.load('exit.png')
+back_case_button_image = pygame.image.load('Pictures/Main Menu/exit.png')
 back_case_button_image = pygame.transform.smoothscale(back_case_button_image, (100, 50))
 
 def draw_text(text, color, x, y, center=True, wrap_width=None):
@@ -256,3 +256,6 @@ class ConfirmQuit:
                             sys.exit()
                         elif SCREEN_HEIGHT // 2 + 30 < mouse_y < SCREEN_HEIGHT // 2 + 70:
                             return
+
+if __name__ == "__main__":
+    MainMenu().display()

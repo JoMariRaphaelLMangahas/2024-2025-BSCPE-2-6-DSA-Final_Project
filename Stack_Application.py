@@ -14,14 +14,17 @@ class ParkingLot:
 
         # Set up screen and background
         self.screen = pygame.display.set_mode((800, 600))
-        self.bg = pygame.image.load('bg_stacks.png')
+        self.bg = pygame.image.load('Pictures/Cars and Parking/bg_stacks.png')
         self.bg = pygame.transform.scale(self.bg, (int(self.screen.get_width() * 1), int(self.screen.get_height() * 1)))
 
         # Set up sprite groups
         self.all_sprites = pygame.sprite.Group()
 
         # List of car images (im1, im2, im3, ..., im10)
-        self.car_images = ['im1.png', 'im2.png', 'im3.png', 'im4.png', 'im5.png', 'im6.png', 'im7.png', 'im8.png', 'im9.png', 'im10.png']
+        self.car_images = ['Pictures/Cars and Parking/im1.png', 'Pictures/Cars and Parking/im2.png', 'Pictures/Cars and Parking/im3.png', 
+                           'Pictures/Cars and Parking/im4.png', 'Pictures/Cars and Parking/im5.png', 'Pictures/Cars and Parking/im6.png', 
+                           'Pictures/Cars and Parking/im7.png', 'Pictures/Cars and Parking/im8.png', 'Pictures/Cars and Parking/im9.png',
+                           'Pictures/Cars and Parking/im10.png']
 
         # Increase the scale width and height of the car images to make them bigger
         self.scale_width = 20
@@ -421,3 +424,6 @@ class Car(pygame.sprite.Sprite):
                 self.rect.y -= self.speed  # Move the car up
             else:
                 self.kill()  # Remove the car from the sprite group once it goes off the screen
+
+if __name__ == '__main__':
+    ParkingLot().run()

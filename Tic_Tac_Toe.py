@@ -44,7 +44,7 @@ class TicTacToe:
         self.pause_menu = PauseMenu(self.screen, self.font)
 
         # Load the background image
-        self.background_image = pygame.image.load('bg1.png')
+        self.background_image = pygame.image.load('Pictures/TicTacToe/bg1.png')
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.WIDTH, self.HEIGHT))
 
     def draw_lines(self):
