@@ -1,6 +1,9 @@
 import pygame
 import sys
 from Pause_Menu import PauseMenu
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'Pictures'))
 
 pygame.init()
 
