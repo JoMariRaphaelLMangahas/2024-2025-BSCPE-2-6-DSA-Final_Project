@@ -229,6 +229,11 @@ class PlayMenu:
                             from Binary_Search_Tree import BinarySearchTreeApp
                             app = BinarySearchTreeApp()
                             app.run()
+                        
+                        elif selected_case == "TOWERS OF HANOI USING RECURSION":
+                            from Tower_of_Hanoi import HanoiGame
+                            app = HanoiGame()
+                            app.run()
 
                     # Back button
                     elif back_button_rect.collidepoint(mouse_x, mouse_y):
