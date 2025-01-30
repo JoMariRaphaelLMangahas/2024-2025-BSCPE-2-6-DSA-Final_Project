@@ -185,6 +185,8 @@ class Application:
             self.tree.traverse(self.tree.root, order, self.traversals[order])
         
         self.is_paused = False
+        self.blink = True
+        self.blink_timer = pygame.time.get_ticks()
 
     def split_text(self, text, max_width):
         """Splits the text into multiple lines to fit within the screen width."""
@@ -227,9 +229,6 @@ class Application:
         while running:
             self.screen.fill((255, 255, 255))
 
-            # Draw the binary search tree
-            self.visualizer.draw_tree(self.tree.root, self.WIDTH // 2, 100, 200)
-
             # Draw the menu button
             self.menu.draw_pause_menu_button()
 
@@ -251,6 +250,17 @@ class Application:
                     # Center the traversal text at the top
                     traversal_text = self.font.render(f"Traversal: {self.order_names[self.orders[self.current_order]]}", True, (0, 0, 0))
                     self.screen.blit(traversal_text, (self.WIDTH // 2 - traversal_text.get_width() // 2, 10))
+
+            # Blinking text "Press SPACE to start the traversal"
+            if pygame.time.get_ticks() - self.blink_timer > 500:
+                self.blink = not self.blink
+                self.blink_timer = pygame.time.get_ticks()
+            if self.blink:
+                blink_text = self.font.render("Press SPACE to start the traversal", True, (255, 0, 0))
+                self.screen.blit(blink_text, (self.WIDTH // 2 - blink_text.get_width() // 2, 50))
+
+            # Draw the binary search tree
+            self.visualizer.draw_tree(self.tree.root, self.WIDTH // 2, 100, 200)
 
             # Display the level selector
             self.menu.draw_level_selector(self.WIDTH, self.HEIGHT, self.max_levels, self.selected_level)
