@@ -219,6 +219,11 @@ class PlayMenu:
                             from Stack_Application import ParkingLot
                             app = ParkingLot()
                             app.run()
+                        
+                        elif selected_case == "QUEUE APPLICATION":
+                            from Queue_Application import ParkingLot
+                            app = ParkingLot()
+                            app.run()
 
                         elif selected_case == "BINARY TREE TRAVERSAL":
                             from Binary_Tree_Traversal import Application
@@ -233,6 +238,11 @@ class PlayMenu:
                         elif selected_case == "TOWERS OF HANOI USING RECURSION":
                             from Tower_of_Hanoi import HanoiGame
                             app = HanoiGame()
+                            app.run()
+                        
+                        elif selected_case == "SORTING":
+                            from Sorting_Application import SortingVisualizer
+                            app = SortingVisualizer()
                             app.run()
 
                     # Back button
@@ -261,6 +271,3 @@ class ConfirmQuit:
                             sys.exit()
                         elif SCREEN_HEIGHT // 2 + 30 < mouse_y < SCREEN_HEIGHT // 2 + 70:
                             return
-
-if __name__ == "__main__":
-    MainMenu().display()
