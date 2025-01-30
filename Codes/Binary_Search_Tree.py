@@ -125,6 +125,9 @@ class BinarySearchTreeApp:
         self.order_names = {"preorder": "Pre-order (TLR)", "inorder": "In-order (LRT)", "postorder": "Post-order (LTR)"}
         self.current_order = 0
 
+        self.blink = True
+        self.blink_timer = pygame.time.get_ticks()
+
     def run(self):
         while self.running:
             self.handle_events()
@@ -262,6 +265,14 @@ class BinarySearchTreeApp:
         # Draw traversal results at the top center
         traversal_text = self.font.render(f"Traversal: {self.order_names[self.orders[self.current_order]]}", True, (0, 0, 0))
         self.screen.blit(traversal_text, (self.WIDTH // 2 - traversal_text.get_width() // 2, 20))
+
+        # Blinking text "Press SPACE to start the traversal"
+        if pygame.time.get_ticks() - self.blink_timer > 500:
+            self.blink = not self.blink
+            self.blink_timer = pygame.time.get_ticks()
+        if self.blink:
+            blink_text = self.font.render("Press SPACE to start the traversal", True, (255, 0, 0))
+            self.screen.blit(blink_text, (self.WIDTH // 2 - blink_text.get_width() // 2, 100))
 
     def display_results(self):
         # Draw toggle button with rounded corners
