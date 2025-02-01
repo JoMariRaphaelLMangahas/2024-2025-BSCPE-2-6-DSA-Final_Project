@@ -369,6 +369,13 @@ class SortingVisualizer:
                             input_text = input_text[:-1]
                         elif event.key == pygame.K_a and pygame.key.get_mods() & pygame.KMOD_CTRL:
                             select_all = True
+                        elif event.key == pygame.K_v and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                            try:
+                                clipboard_text = pygame.scrap.get(pygame.SCRAP_TEXT).decode('utf-8')
+                                undo_stack.append(input_text)
+                                input_text += clipboard_text
+                            except:
+                                pass
                         elif event.key == pygame.K_z and pygame.key.get_mods() & pygame.KMOD_CTRL:
                             if undo_stack:
                                 redo_stack.append(input_text)
